@@ -1,7 +1,6 @@
 #!/bin/sh
 DEMO="Install Demo"
 AUTHORS="Andrew Block, Eric D. Schabell"
-PROJECT="git@github.com:jbossdemocentral/bpms-install-demo.git"
 PRODUCT="JBoss BPM Suite"
 DOCKERFILE="support/docker/Dockerfile"
 SRC_DIR=./installs
@@ -28,7 +27,7 @@ echo "##                                                             ##"
 echo "##  brought to you by,                                         ##"
 echo "##             ${AUTHORS}                  ##"
 echo "##                                                             ##"
-echo "##  ${PROJECT}      ##"
+echo "##                                                             ##"
 echo "##                                                             ##"
 echo "#################################################################"
 echo

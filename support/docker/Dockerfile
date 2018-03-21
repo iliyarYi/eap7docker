@@ -1,8 +1,5 @@
 # Use jbossdemocentral/developer as the base
-FROM jbossdemocentral/developer
-
-# Maintainer details
-MAINTAINER Andrew Block <andy.block@gmail.com>, Eric D. Schabell <erics@redhat.com>
+FROM centos/s2i-base-centos7
 
 # Environment Variables
 ENV BPMS_HOME /opt/jboss/bpms/jboss-eap-7.0
@@ -19,13 +16,21 @@ ENV EAP_VERSION_MICRO 0
 ENV EAP_INSTALLER=jboss-eap-$EAP_VERSION_MAJOR.$EAP_VERSION_MINOR.$EAP_VERSION_MICRO-installer.jar
 ENV BPMS_DEPLOYABLE=jboss-bpmsuite-$BPMS_VERSION_MAJOR.$BPMS_VERSION_MINOR.$BPMS_VERSION_MICRO.$BPMS_VERSION_PATCH-deployable-eap7.x.zip
 
+RUN chgrp -R 0 ~ && \
+    chmod -R g=u ~
+
 # ADD Installation Files
 COPY support/installation-eap support/installation-eap.variables installs/$BPMS_DEPLOYABLE installs/$EAP_INSTALLER /opt/jboss/
 
 # Update Permissions on Installers
-USER root
+#USER root
+
+RUN yum install java-1.8.0-openjdk -y
 RUN chown 1000:1000 /opt/jboss/$EAP_INSTALLER /opt/jboss/$BPMS_DEPLOYABLE
-USER 1000
+#USER 1000
+
+ADD s2i /usr/libexec/s2i/
+#ADD root /usr/libexec/root/
 
 # Prepare and run installer and cleanup installation components
 RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath>:" /opt/jboss/installation-eap \
@@ -38,17 +43,19 @@ RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath
 # Create users and add support files
 RUN $BPMS_HOME/bin/add-user.sh -a -r ApplicationRealm -u bpmsAdmin -p bpmsuite1! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent \
   && $BPMS_HOME/bin/add-user.sh -a -r ApplicationRealm -u erics -p bpmsuite1! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent
+RUN $BPMS_HOME/bin/add-user.sh -a --user controllerUser --password controllerUser1234 --role kie-server,rest-all --silent
 COPY support/standalone.xml $BPMS_HOME/standalone/configuration/
 COPY support/userinfo.properties $BPMS_HOME/standalone/deployments/business-central.war/WEB-INF/classes/
 
+RUN chmod -R 777 /opt/jboss
 # Swtich back to root user to perform cleanup
-USER root
+#USER root
 
 # Fix permissions on support files
 RUN chown -R 1000:1000 $BPMS_HOME/standalone/configuration/standalone.xml $BPMS_HOME/standalone/deployments/business-central.war/WEB-INF/classes/userinfo.properties
 
-# Run as JBoss
-USER 1000
+# Run as default user
+USER 1001
 
 # Expose Ports
 EXPOSE 9990 9999 8080
