@@ -1,4 +1,3 @@
-# Use jbossdemocentral/developer as the base
 FROM centos/s2i-base-centos7
 
 # Environment Variables
@@ -44,6 +43,7 @@ RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath
 RUN $BPMS_HOME/bin/add-user.sh -a -r ApplicationRealm -u bpmsAdmin -p bpmsuite1! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent \
   && $BPMS_HOME/bin/add-user.sh -a -r ApplicationRealm -u erics -p bpmsuite1! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent
 RUN $BPMS_HOME/bin/add-user.sh -a --user controllerUser --password controllerUser1234 --role kie-server,rest-all --silent
+RUN $BPMS_HOME/bin/add-user.sh -a --user admin --password admin --role kie-server,rest-all,admin --silent
 COPY support/standalone.xml $BPMS_HOME/standalone/configuration/
 COPY support/userinfo.properties $BPMS_HOME/standalone/deployments/business-central.war/WEB-INF/classes/
 
